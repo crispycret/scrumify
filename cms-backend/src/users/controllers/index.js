@@ -5,27 +5,64 @@ const db = require('../../core/db')
 const models = require('../models')
 
 
+function verify_username(username) {
+    if (username.length < 3) {
+        return false
+    } else if (!username.match(/^[0-9a-z]+$/i)) {
+        return false
+    }
+    return true
+}
 
 
 async function createUser(req, res) {
     console.log(`/users/create -> createUser() -> userData`)
 
-    console.log(req)
+    // Verify and sanitize user input
+    const username = req.body.username
+    const email = req.body.email
+    const pass_hash = req.body.pass_hash
+    
+    // Verify username (Needs to check uniqueness)
+    if (!verify_username(username)) {
+        console.log("[+] Username Validation: Failed!")
+        res.end()
+        return
+    }
+    console.log("[+] Username Validation: Passed!")
 
-    console.log(req.body)
+    // Verify email
+    
+    // verify and hash password
 
-    const newUser = await models.user.create({
-        username: req.body.username,
-        email: req.body.email,
-        pass_hash: req.body.pass_hash
-    })
+    try {
+        const newUser = await models.user.create({
+            username,
+            email,
+            pass_hash
+        })
+        res.send(newUser)
+    } catch (e) {
+        console.log(e.errors)
+        // console.log(e.errors.username.properties.message)
+        // console.log(e.errors.email.properties.message)
 
-    res.send(newUser)
+        // How to loop through
+        // const errorMessages = []
+        // e.errors.map((error) => {
+        //     console.log(error.properties.message)
+        // })
+
+        
+        res.send("User creation Failed!")
+    }
+
 }
 
 
 async function getUsers(req, res) {
     console.log("/users/ -> users.getUsers()")
+
 
     // Authenticate user by checking auth token, exit on failure
     if (false) res.end()
